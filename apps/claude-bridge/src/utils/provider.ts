@@ -9,9 +9,11 @@ import type {
 	AnthropicConfig,
 	OpenAIConfig,
 	GoogleConfig,
+	MistralConfig,
 	AnthropicAskOptions,
 	OpenAIAskOptions,
 	GoogleAskOptions,
+	MistralAskOptions,
 	ChatClient,
 } from "@mariozechner/lemmy";
 import type {
@@ -60,6 +62,11 @@ export async function createProviderClient(config: BridgeConfig): Promise<Provid
 				client = lemmy.anthropic(providerConfig as AnthropicConfig);
 				break;
 			}
+			case "mistral": {
+				const { lemmy } = await import("@mariozechner/lemmy");
+				client = lemmy.mistral(providerConfig as MistralConfig);
+				break;
+			}
 			default:
 				const _exhaustiveCheck: never = provider;
 				throw new Error(`Unsupported provider: ${_exhaustiveCheck}`);
@@ -92,6 +99,8 @@ function buildProviderConfig(provider: Provider, config: BridgeConfig): Provider
 			return baseConfig as OpenAIConfig;
 		case "google":
 			return baseConfig as GoogleConfig;
+		case "mistral":
+			return baseConfig as MistralConfig;
 		default:
 			// TypeScript exhaustiveness check
 			const _exhaustiveCheck: never = provider;
@@ -116,6 +125,10 @@ function getDefaultApiKey(provider: Provider): string {
 			const googleKey = process.env["GOOGLE_API_KEY"];
 			if (!googleKey) throw new Error("GOOGLE_API_KEY environment variable is required");
 			return googleKey;
+		case "mistral":
+			const mistralKey = process.env["MISTRAL_API_KEY"];
+			if (!mistralKey) throw new Error("MISTRAL_API_KEY environment variable is required");
+			return mistralKey;
 		default:
 			// TypeScript exhaustiveness check
 			const _exhaustiveCheck: never = provider;
@@ -214,6 +227,14 @@ export function convertThinkingParameters(
 					reasoningEffort: "medium" as const,
 				}),
 			} as OpenAIAskOptions;
+
+		case "mistral":
+			return {
+				...baseOptions,
+				...(anthropicRequest.thinking?.type == "enabled" && {
+					reasoningEffort: "medium" as const,
+				}),
+			} as MistralAskOptions;
 
 		default:
 			// TypeScript exhaustiveness check

@@ -1,6 +1,6 @@
 import type { SerializedContext, ChatClient } from "@mariozechner/lemmy";
 import type { MessageCreateParamsBase } from "@anthropic-ai/sdk/resources/messages/messages.js";
-import type { AnthropicConfig, OpenAIConfig, GoogleConfig } from "@mariozechner/lemmy";
+import type { AnthropicConfig, OpenAIConfig, GoogleConfig, MistralConfig } from "@mariozechner/lemmy";
 import type { ModelData } from "@mariozechner/lemmy";
 
 // Basic types for claude-bridge
@@ -24,7 +24,7 @@ export interface RawPair {
 	note?: string;
 }
 
-export type Provider = "anthropic" | "openai" | "google";
+export type Provider = "anthropic" | "openai" | "google" | "mistral";
 
 // JSON Schema types
 export interface JSONSchema {
@@ -73,7 +73,7 @@ export interface ProviderClientInfo {
 	modelData: ModelData | null; // null for unknown models
 }
 
-export type ProviderConfig = AnthropicConfig | OpenAIConfig | GoogleConfig;
+export type ProviderConfig = AnthropicConfig | OpenAIConfig | GoogleConfig | MistralConfig;
 
 export interface TransformationEntry {
 	timestamp: number;

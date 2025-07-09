@@ -10,6 +10,7 @@ import {
 	AnthropicModelData,
 	OpenAIModelData,
 	GoogleModelData,
+	MistralModelData,
 	ModelToProvider,
 	findModelData,
 	type AllModels,
@@ -67,6 +68,7 @@ const modelValidationConfig: ModelValidationConfig = {
 		anthropic: AnthropicModelData,
 		openai: OpenAIModelData,
 		google: GoogleModelData,
+		mistral: MistralModelData,
 	},
 	modelToProvider: ModelToProvider,
 };
@@ -108,20 +110,24 @@ USAGE:
 
 EXAMPLES:
   # Natural discovery flow
-  claude-bridge                           # Shows: openai, google
+  claude-bridge                           # Shows: openai, google, mistral
   claude-bridge openai                    # Shows OpenAI models
   claude-bridge google                    # Shows Google models
+  claude-bridge mistral                   # Shows Mistral models
 
   # Execution
   claude-bridge openai gpt-4o
   claude-bridge google gemini-2.0-flash-exp
+  claude-bridge mistral mistral-large
 
   # With custom configuration
   claude-bridge openai gpt-4o --apiKey sk-... --baseURL https://api.openai.com/v1
+  claude-bridge mistral mistral-large --apiKey sk-... --baseURL https://api.mistral.ai/v1
 
   # Single-shot prompts
   claude-bridge openai gpt-4o -p "Hello world"
   claude-bridge google gemini-1.5-pro -p "Debug this code"
+  claude-bridge mistral mistral-large -p "Write a poem"
 
 OPTIONS:
   --apiKey <key>        API key for the provider
@@ -137,6 +143,7 @@ OPTIONS:
 ENVIRONMENT VARIABLES:
   OPENAI_API_KEY        API key for OpenAI (if --apiKey not provided)
   GOOGLE_API_KEY        API key for Google (if --apiKey not provided)
+  MISTRAL_API_KEY       API key for Mistral (if --apiKey not provided)
 
 NOTE:
   Only models with both tools and image support are shown by default.
@@ -158,6 +165,9 @@ function showProviders(): void {
 					break;
 				case "google":
 					console.log(`  google     Google models (Gemini, etc.)`);
+					break;
+				case "mistral":
+					console.log(`  mistral    Mistral AI models (Mistral Large, etc.)`);
 					break;
 				default:
 					// TypeScript will catch if we miss any provider cases
@@ -210,6 +220,8 @@ function showProviderModels(provider: string): void {
 		providerDisplayName = "OpenAI";
 	} else if (provider === "google") {
 		providerDisplayName = "Google";
+	} else if (provider === "mistral") {
+		providerDisplayName = "Mistral AI";
 	} else {
 		// This should never happen since we validated provider above
 		console.error(`❌ Unexpected provider: ${provider}`);
@@ -422,6 +434,9 @@ function runClaudeWithBridge(args: ClaudeArgs): number {
 				break;
 			case "google":
 				envVar = "GOOGLE_API_KEY";
+				break;
+			case "mistral":
+				envVar = "MISTRAL_API_KEY";
 				break;
 			default:
 				// TypeScript will catch if we miss any provider cases

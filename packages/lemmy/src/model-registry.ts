@@ -3,21 +3,22 @@ import {
 	AllModels,
 	AnthropicModelData,
 	GoogleModelData,
+	MistralModelData,
 	ModelToProvider,
 	OpenAIModelData,
 } from "./generated/models.js";
 import { ChatClient, TokenUsage } from "./types.js";
-import type { AnthropicConfig, GoogleConfig, OpenAIConfig } from "./configs.js";
+import type { AnthropicConfig, GoogleConfig, OpenAIConfig, MistralConfig } from "./configs.js";
 
 // Re-export model types and data
 export * from "./generated/models.js";
 
 // Provider utilities for CLI usage
-export function getProviderForModel(model: AllModels): "anthropic" | "openai" | "google" {
+export function getProviderForModel(model: AllModels): "anthropic" | "openai" | "google" | "mistral" {
 	return ModelToProvider[model as keyof typeof ModelToProvider];
 }
 
-export function getDefaultApiKeyEnvVar(provider: "anthropic" | "openai" | "google"): string {
+export function getDefaultApiKeyEnvVar(provider: "anthropic" | "openai" | "google" | "mistral"): string {
 	switch (provider) {
 		case "anthropic":
 			return "ANTHROPIC_API_KEY";
@@ -25,6 +26,8 @@ export function getDefaultApiKeyEnvVar(provider: "anthropic" | "openai" | "googl
 			return "OPENAI_API_KEY";
 		case "google":
 			return "GOOGLE_API_KEY";
+		case "mistral":
+			return "MISTRAL_API_KEY";
 		default:
 			throw new Error(`Unknown provider: ${provider}`);
 	}
@@ -33,7 +36,7 @@ export function getDefaultApiKeyEnvVar(provider: "anthropic" | "openai" | "googl
 // Type-safe factory function for CLI usage
 export function createClientForModel(
 	model: AllModels,
-	config: AnthropicConfig | OpenAIConfig | GoogleConfig,
+	config: AnthropicConfig | OpenAIConfig | GoogleConfig | MistralConfig,
 ): ChatClient {
 	const provider = ModelToProvider[model as keyof typeof ModelToProvider];
 
@@ -43,6 +46,8 @@ export function createClientForModel(
 		return lemmy.openai({ ...config, model } as OpenAIConfig);
 	} else if (provider === "google") {
 		return lemmy.google({ ...config, model } as GoogleConfig);
+	} else if (provider === "mistral") {
+		return lemmy.mistral({ ...config, model } as MistralConfig);
 	} else {
 		throw new Error(`Unsupported model: ${model}`);
 	}
@@ -58,6 +63,9 @@ export function findModelData(model: string): ModelData | undefined {
 	}
 	if (GoogleModelData[model as keyof typeof GoogleModelData]) {
 		return GoogleModelData[model as keyof typeof GoogleModelData] as ModelData;
+	}
+	if (MistralModelData[model as keyof typeof MistralModelData]) {
+		return MistralModelData[model as keyof typeof MistralModelData] as ModelData;
 	}
 	return undefined;
 }

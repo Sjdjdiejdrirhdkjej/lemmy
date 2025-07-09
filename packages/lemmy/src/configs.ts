@@ -4,7 +4,7 @@ import { z } from "zod";
 // Core schemas
 // =============================================================================
 
-export const ProviderSchema = z.enum(["anthropic", "openai", "google"]);
+export const ProviderSchema = z.enum(["anthropic", "openai", "google", "mistral"]);
 
 // =============================================================================
 // Ask options schemas (for runtime API calls)
@@ -111,6 +111,39 @@ export const GoogleAskOptionsSchema = BaseAskOptionsSchema.extend({
 	responseMimeType: z.enum(["text/plain", "application/json"]).optional().describe("Output response mimetype"),
 });
 
+export const MistralAskOptionsSchema = OpenAIAskOptionsSchema.extend({});
+
+// =============================================================================
+// Client configuration schemas (compose base config + model + defaults)
+// =============================================================================
+export const BaseClientConfigSchema = z.object({
+	apiKey: z.string().describe("API key for the provider"),
+	baseURL: z.string().optional().describe("Optional custom API base URL"),
+	maxRetries: z.coerce.number().min(0).optional().describe("Maximum number of retries for failed requests"),
+});
+
+export const AnthropicConfigSchema = BaseClientConfigSchema.extend({
+	model: z.string().describe("Model name (e.g. 'claude-3-5-sonnet-20241022')"),
+	defaults: AnthropicAskOptionsSchema.optional().describe("Default options for ask requests"),
+});
+
+export const OpenAIConfigSchema = BaseClientConfigSchema.extend({
+	model: z.string().describe("Model name (e.g. 'gpt-4o')"),
+	organization: z.string().optional().describe("Optional OpenAI organization ID"),
+	defaults: OpenAIAskOptionsSchema.optional().describe("Default options for ask requests"),
+});
+
+export const GoogleConfigSchema = BaseClientConfigSchema.extend({
+	model: z.string().describe("Model name (e.g. 'gemini-1.5-pro')"),
+	projectId: z.string().optional().describe("Optional Google Cloud project ID"),
+	defaults: GoogleAskOptionsSchema.optional().describe("Default options for ask requests"),
+});
+
+export const MistralConfigSchema = BaseClientConfigSchema.extend({
+	model: z.string().describe("Model name (e.g. 'mistral-large')"),
+	defaults: MistralAskOptionsSchema.optional().describe("Default options for ask requests"),
+});
+
 // =============================================================================
 // Client configuration schemas (compose base config + model + defaults)
 // =============================================================================
@@ -146,6 +179,7 @@ export const CLIENT_CONFIG_SCHEMAS = {
 	anthropic: AnthropicAskOptionsSchema,
 	openai: OpenAIAskOptionsSchema,
 	google: GoogleAskOptionsSchema,
+	mistral: MistralAskOptionsSchema,
 } as const;
 
 // =============================================================================
@@ -155,17 +189,20 @@ export type BaseConfig = z.infer<typeof BaseClientConfigSchema>;
 export type AnthropicConfig = z.infer<typeof AnthropicConfigSchema>;
 export type OpenAIConfig = z.infer<typeof OpenAIConfigSchema>;
 export type GoogleConfig = z.infer<typeof GoogleConfigSchema>;
+export type MistralConfig = z.infer<typeof MistralConfigSchema>;
 
 export type BaseAskOptions = z.infer<typeof BaseAskOptionsSchema>;
 export type AnthropicAskOptions = z.infer<typeof AnthropicAskOptionsSchema>;
 export type OpenAIAskOptions = z.infer<typeof OpenAIAskOptionsSchema>;
 export type GoogleAskOptions = z.infer<typeof GoogleAskOptionsSchema>;
+export type MistralAskOptions = z.infer<typeof MistralAskOptionsSchema>;
 
 // Schema-driven config type mapping
 export type ProviderConfigMap = {
 	anthropic: AnthropicConfig;
 	openai: OpenAIConfig;
 	google: GoogleConfig;
+	mistral: MistralConfig;
 };
 
 // =============================================================================
